@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://ideastogether.github.io/sitemap.xml
