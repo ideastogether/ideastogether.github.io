@@ -700,7 +700,7 @@ async function finishLogin(session,input){
     const{data:ex}=await sb.from("profiles").select("id").eq("nickname",n);if(ex&&ex.length)return $("#ae2").textContent="這個名稱已被使用。";
     const email=$("#ae"),message=$("#ae2");
     const shareType=submissionIntent?.type;
-    const{data,error}=await sb.auth.signUp({email:email.value.trim(),password:$("#ap").value,options:{data:{nickname:n,account_type:at,bio,website:web},captchaToken:CF()}});
+    const{data,error}=await sb.auth.signUp({email:email.value.trim(),password:$("#ap").value,options:{emailRedirectTo:location.href.split("#")[0],data:{nickname:n,account_type:at,bio,website:web},captchaToken:CF()}});
     if(!error&&data.session&&submissionIntent)return finishLogin(data.session,email);
     if(!message.isConnected)return;
     if(error){message.textContent="註冊失敗："+zh(error);cfReset();return}
@@ -746,7 +746,7 @@ const act={
     const at=(document.querySelector("[name=at]:checked")||{}).value||"personal";let bio="",web="";
     if(at==="organization"){bio=$("#ab").value.trim();web=$("#aw").value.trim();if(bio.length<10)return $("#ae2").textContent="請填寫商家或機構簡介（至少 10 字）。";if(web&&!/^https?:\/\/[^\s]+$/i.test(web))return $("#ae2").textContent="官方網站需以 http:// 或 https:// 開頭。"}
     const{data:ex}=await sb.from("profiles").select("id").eq("nickname",n);if(ex&&ex.length)return $("#ae2").textContent="這個暱稱已被使用。";
-    const{error}=await sb.auth.signUp({email:$("#ae").value.trim(),password:$("#ap").value,options:{data:{nickname:n,account_type:at,bio,website:web},captchaToken:CF()}});
+    const{error}=await sb.auth.signUp({email:$("#ae").value.trim(),password:$("#ap").value,options:{emailRedirectTo:location.href.split("#")[0],data:{nickname:n,account_type:at,bio,website:web},captchaToken:CF()}});
     if(error){$("#ae2").textContent="註冊失敗："+zh(error);cfReset()}else{$("#ae2").textContent="註冊成功！若沒有自動登入，請到信箱點確認信。"}
   },
   async out(){await sb.auth.signOut();location.hash="#/"},
@@ -1203,7 +1203,7 @@ const act={
     const at=(document.querySelector("[name=at]:checked")||{}).value||"personal";let bio="",web="";
     if(at==="organization"){bio=$("#ab").value.trim();web=$("#aw").value.trim();if(bio.length<10)return $("#ae2").textContent="請填寫商家或機構簡介（至少 10 字）。";if(web&&!/^https?:\/\/[^\s]+$/i.test(web))return $("#ae2").textContent="官方網站需以 http:// 或 https:// 開頭。"}
     const{data:ex}=await sb.from("profiles").select("id").eq("nickname",n);if(ex&&ex.length)return $("#ae2").textContent="這個名稱已被使用。";
-    const{error}=await sb.auth.signUp({email:$("#ae").value.trim(),password:$("#ap").value,options:{data:{nickname:n,account_type:at,bio,website:web},captchaToken:CF()}});
+    const{error}=await sb.auth.signUp({email:$("#ae").value.trim(),password:$("#ap").value,options:{emailRedirectTo:location.href.split("#")[0],data:{nickname:n,account_type:at,bio,website:web},captchaToken:CF()}});
     if(error){$("#ae2").textContent="註冊失敗："+zh(error);cfReset()}else{$("#ae2").textContent="註冊成功！若沒有自動登入，請到信箱點確認信。"}
   },
   async forgot(){const em=$("#ae").value.trim();if(!em)return $("#ae2").textContent="請先在上面填入 Email。";
