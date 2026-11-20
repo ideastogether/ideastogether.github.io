@@ -1,0 +1,21 @@
+<!doctype html><html lang="zh-Hant"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>每日自動更新｜點子共玩所</title>
+<style>body{font:16px system-ui;max-width:920px;margin:24px auto;padding:16px;background:#faf7f1;color:#36332f}section{background:white;padding:16px;margin:16px 0;border:1px solid #ddd3c7;border-radius:12px}button,input,textarea{font:inherit;padding:10px;box-sizing:border-box}textarea{width:100%;min-height:240px}pre{white-space:pre-wrap;overflow-wrap:anywhere}button{margin:8px;border-radius:8px;background:white;border:1px solid #b8a99a}label{display:block;margin:12px 0}</style>
+<h1>每日自動更新</h1><p><a href="../#/admin">返回後台登入</a> · <a href="ai-import.html">活動雲端草稿</a> · <a href="https://github.com/ideastogether/ideastogether.github.io/actions/workflows/daily-content-update.yml" target="_blank" rel="noopener">GitHub Actions 立即執行</a></p>
+<p>手動與自動共用台灣日期每日一次限制，失敗也不重跑。不使用付費 AI；遊戲庫耗盡即停止新增。</p><p id="message" role="status">驗證管理員中…</p><main hidden>
+<section><label><input id="enabled" type="checkbox"> 開啟每日更新</label><label>每日活動數量 <input id="events" type="number" min="0" max="5" value="5"></label><label>每日遊戲數量 <input id="games" type="number" min="0" max="5" value="5"></label><button id="save">儲存設定</button><h2>最近執行紀錄</h2><pre id="logs"></pre></section>
+<section><h2>遊戲雲端草稿</h2><p>編輯 JSON 後儲存。送審會建立待審核遊戲，請到原後台確認後發布；不需要圖片。</p><div id="drafts"></div></section></main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script><script type="module">
+const sb=supabase.createClient('https://impuxatitpghslleasma.supabase.co','sb_publishable_bufFrNEhfUMxuwNmFOosRg_rPiekiNf');
+const $=id=>document.getElementById(id);let uid;
+const check=r=>{if(r.error)throw Error(r.error.message);return r.data};
+async function load(){
+const s=check(await sb.from('daily_content_settings').select('*').single());$('enabled').checked=s.enabled;$('events').value=s.event_limit;$('games').value=s.game_limit;
+$('logs').textContent=JSON.stringify(check(await sb.from('daily_content_runs').select('*').order('day',{ascending:false}).limit(10)),null,2);
+$('drafts').replaceChildren();for(const d of check(await sb.from('game_cloud_drafts').select('*').order('created_at',{ascending:false}).limit(100))){
+const box=document.createElement('section'),title=document.createElement('h3'),edit=document.createElement('textarea');title.textContent=d.title;edit.value=JSON.stringify(d.payload,null,2);box.append(title,edit);
+for(const [label,action] of [['儲存',async()=>{const payload=JSON.parse(edit.value);check(await sb.from('game_cloud_drafts').update({title:payload.title,payload}).eq('id',d.id))}],['刪除',async()=>{if(confirm('刪除此草稿？'))check(await sb.from('game_cloud_drafts').delete().eq('id',d.id))}],['送審',async()=>{if(edit.value!==JSON.stringify(d.payload,null,2))throw Error('請先儲存編輯');check(await sb.rpc('submit_game_cloud_draft',{p_id:d.id}));}]]){const b=document.createElement('button');b.textContent=label;b.onclick=()=>run(async()=>{await action();await load()});box.append(b)}$('drafts').append(box)}
+}
+async function run(fn){try{await fn();$('message').textContent='完成'}catch(e){$('message').textContent=e.message}}
+$('save').onclick=()=>run(async()=>{const a=Number($('events').value),b=Number($('games').value);if(![a,b].every(n=>Number.isInteger(n)&&n>=0&&n<=5))throw Error('數量須為 0～5');check(await sb.from('daily_content_settings').update({enabled:$('enabled').checked,event_limit:a,game_limit:b}).eq('id',1));await load()});
+run(async()=>{const u=check(await sb.auth.getUser()).user;if(!u)throw Error('請先回後台登入管理員');uid=u.id;const p=check(await sb.from('profiles').select('is_admin,suspended').eq('id',uid).single());if(!p.is_admin||p.suspended)throw Error('僅管理員可操作');document.querySelector('main').hidden=false;await load()});
+</script></html>
