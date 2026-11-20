@@ -2,6 +2,8 @@
 
 ## 狀態
 
+2026-11-20：經使用者授權，已在正式 Supabase 套用 daily_content_update migration。三張新表均啟用 RLS，匿名無讀取權限；非管理員 authenticated 角色讀不到設定與草稿。設定 enabled=false，尚無執行紀錄及遊戲草稿。安全顧問未新增此功能相關警示。
+
 此版本為第一階段，預設暫停。沒有呼叫付費 AI、搜尋、圖片 API，也沒有新訂閱。
 
 目前活動只沿用 web_activity_candidates 快取，沒有自動觸發 refresh-web-candidates（尚未確認該 Edge Function 的實作、成本及伺服器端驗證）。因此未完成每日主動搜尋全台新公告。來源缺少明確場次、地點、親子適用證據、報名狀態時不建立草稿；可為零筆。未涵蓋所有民間來源。
@@ -12,13 +14,13 @@
 
 ## 啟用前必要步驟
 
-1. 審查開發分支／PR。此變更尚未在正式 Supabase 執行 SQL。
-2. 經資料庫變更授權後，在 SQL Editor 執行 `supabase/daily-content-update.sql`。這是一次性 SQL，請勿重複執行。預設 enabled=false。
+1. 審查開發分支／PR。資料庫變更已套用；前端與工作流程仍在開發分支。
+2. `supabase/daily-content-update.sql` 已經授權並套用，請勿重複執行。預設 enabled=false。
 3. GitHub repository → Settings → Secrets and variables → Actions 新增 `SUPABASE_URL`、`SUPABASE_SERVICE_ROLE_KEY`。金鑰只能放 Secrets，不能放前端或 repository；不要將金鑰傳送到聊天。
 4. 合併 PR 至 main，確認 GitHub Pages 部署成功。workflow 必須在 default branch 才會排程。
 5. 管理後台 → 每日自動更新 → 將兩種數量先設 1 → 開啟 → Actions 手動執行。檢查草稿及執行紀錄後才提高數量。
 
-需要資料庫變更授權與 Secrets 才能完成正式端到端測試、啟用排程。尚未驗證正式寫入、手機瀏覽器實際操作與原站完整回歸；不得視為全部驗收通過。
+仍需要 GitHub Secrets 才能完成正式端到端測試、啟用排程。尚未驗證正式寫入、手機瀏覽器實際操作與原站完整回歸；不得視為全部驗收通過。
 
 ## 使用
 
