@@ -1,0 +1,23 @@
+name: Daily content update
+on:
+  schedule:
+    - cron: '0 0 * * *' # UTC 00:00 = Asia/Taipei 08:00; delivery may be delayed
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: daily-content-update
+  cancel-in-progress: false
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: Test
+        run: node --test tests/*.test.mjs
+      - name: Update drafts only
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: node scripts/daily-content-update.mjs

@@ -2588,6 +2588,7 @@ async function adminPage(){
     ${section("as","停權名單",count(sp,suspendedError),suspendedError?'<p class="mu">無法讀取停權名單。</p>':(sp||[]).map(u=>`<div class="cm">${esc(u.nickname)} <a data-a="x.unsus" data-id="${u.id}">解除停權</a></div>`).join("")||'<p class="mu">沒有停權的帳號。</p>')}
   </section>
   <div class="card-box"><h3>GA4 網站數據</h3><p class="mu">最近七個完整日</p><div class="r"><button data-a="x.gaReport">載入報表</button><a href="https://analytics.google.com/" target="_blank" rel="noopener noreferrer">開啟 Google Analytics ↗</a></div><div id="ga-report" aria-live="polite"></div></div>`;
+  $("#app").insertAdjacentHTML("afterbegin",'<p><a href="admin/daily-content.html">每日自動更新與遊戲雲端草稿</a></p>');
   hookSec(ADM.open);
   renderActivityManager();
   showImportQueue(queue);

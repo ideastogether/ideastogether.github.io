@@ -1,0 +1,26 @@
+// Optional local SQL integration check: PGLITE_MODULE=/absolute/path/to/pglite/dist/index.js node tests/sql-check.mjs
+const {PGlite}=await import(process.env.PGLITE_MODULE||'@electric-sql/pglite');
+import {readFile} from 'node:fs/promises';
+import assert from 'node:assert/strict';
+const db=new PGlite();
+await db.exec(`create role anon;create role authenticated;create role service_role bypassrls;create schema auth;
+create function auth.uid() returns uuid language sql as $$select '00000000-0000-0000-0000-000000000001'::uuid$$;
+create function public.is_admin() returns boolean language sql as $$select current_user <> 'authenticated'$$;
+create function public.is_suspended() returns boolean language sql as $$select false$$;
+create table public.profiles(id uuid,is_admin boolean,suspended boolean);
+insert into profiles values('00000000-0000-0000-0000-000000000001',true,false);
+create table public.official_event_drafts(id uuid default gen_random_uuid(),created_by uuid,title text,payload jsonb,source_url text);
+create table public.games(author_id uuid,title text,how text,age integer,materials text[],tags text[],photos text[],duration_label text,status text);`);
+await db.exec(await readFile(new URL('../supabase/daily-content-update.sql',import.meta.url),'utf8'));
+assert.equal((await db.query('select claim_daily_content() as v')).rows[0].v,false);
+await db.exec('update daily_content_settings set enabled=true');
+assert.equal((await db.query('select claim_daily_content() as v')).rows[0].v,true);
+assert.equal((await db.query('select claim_daily_content() as v')).rows[0].v,false);
+await db.exec(`select finish_daily_content((now() at time zone 'Asia/Taipei')::date,'[]','[{"title":"test","how":"test","age":1,"materials":[],"tags":[]}]',0)`);
+assert.equal((await db.query('select count(*)::int as n from game_cloud_drafts')).rows[0].n,1);
+await assert.rejects(()=>db.exec(`select finish_daily_content((now() at time zone 'Asia/Taipei')::date,'[]','[]',0)`));
+await db.exec('set role authenticated');
+assert.equal((await db.query('select * from game_cloud_drafts')).rows.length,0);
+assert.equal((await db.query('select * from daily_content_settings')).rows.length,0);
+await assert.rejects(()=>db.exec('select claim_daily_content()'));
+await db.close();console.log('SQL verified: paused default, once/day, atomic finish, repeat rejection, member isolation');
