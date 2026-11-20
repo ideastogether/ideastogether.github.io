@@ -5,15 +5,19 @@ if(!base||!key){console.error('Missing GitHub Secrets: SUPABASE_URL / SUPABASE_S
 let requests=0;
 async function api(path,method='GET',body){
  if(++requests>35)throw Error('Request budget exceeded');
- const r=await fetch(base+'/rest/v1/'+path,{method,headers:{apikey:key,Authorization:'Bearer '+key,'Content-Type':'application/json',Prefer:'return=representation'},body:body===undefined?undefined:JSON.stringify(body),signal:AbortSignal.timeout(15000)});
- if(!r.ok)throw Error('Database request failed: '+r.status);return r.status===204?null:r.json();
+ const r=await fetch(base+'/rest/v1/'+path,{method,headers:{apikey:key,Authorization:'Bearer '+key,'Content-Type':'application/json',Prefer:'return=representation,count=exact'},body:body===undefined?undefined:JSON.stringify(body),signal:AbortSignal.timeout(15000)});
+ if(!r.ok)throw Error('Database request failed: '+r.status);
+ const total=Number(r.headers.get('content-range')?.split('/')[1]);
+ if(method==='GET'&&!path.startsWith('web_activity_candidates')&&total>1000)throw Error('Duplicate-check budget exceeded; pause and review');
+ return r.status===204?null:r.json();
 }
-const day=taiwanDay();let claimed=false;
+const day=taiwanDay();let claimed=false;const verifyOnly=process.env.VERIFY_ONLY==='true';
 try{
  const settings=(await api('daily_content_settings?id=eq.1'))[0];
- if(!settings?.enabled){console.log('Daily update paused');process.exit(0)}
- const claim=await api('rpc/claim_daily_content','POST',{});
- if(!claim){console.log('Taiwan date already attempted');process.exit(0)}claimed=true;
+ if(!settings)throw Error('Settings missing');
+ if(!verifyOnly&&!settings.enabled){console.log('Daily update paused');process.exit(0)}
+ const claim=verifyOnly?true:await api('rpc/claim_daily_content','POST',{});
+ if(!claim){console.log('Taiwan date already attempted');process.exit(0)}claimed=!verifyOnly;
  // Read-only existing discovery cache; never invoke the existing potentially expensive search function.
  const rows=await api('web_activity_candidates?select=*&order=found_at.desc&limit=200');
  const events=await api('events?select=title,city,link,start_at&limit=1001');
@@ -35,6 +39,7 @@ try{
  if([...known,...selected].some(e=>similarGame(e,g))){duplicates++;continue}
  if(selected.length<Math.min(5,settings.game_limit))selected.push(g);
  }
+ if(verifyOnly){console.log(JSON.stringify({verifyOnly:true,day,eligibleEvents:chosen.length,eligibleGames:selected.length,duplicates,requests}));process.exit(0)}
  await api('rpc/finish_daily_content','POST',{p_day:day,p_events:chosen,p_games:selected,p_duplicates:duplicates});
  console.log(JSON.stringify({day,events:chosen.length,games:selected.length,duplicates,requests}));
 }catch(e){
