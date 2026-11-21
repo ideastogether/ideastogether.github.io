@@ -30,12 +30,20 @@ function openImportDraft(index){
  const record=cloudDrafts[index];if(!record)return;
  const draft=record.payload||{};
  const fields=[["title","活動名稱"],["description","活動介紹"],["city","縣市"],["venue","地點"],["shared_organizer","主辦單位"],["start_at","開始日期時間（ISO 格式）"],["end_at","結束日期時間（ISO 格式）"],["age_min","最小年齡（歲）"],["age_max","最大年齡（歲）"],["fee","費用（元，請核對）"],["link","原始公告連結"]];
- $("draft-editor").innerHTML=`<h3>線上編輯活動草稿</h3><p class="bad">請確認場次、費用、報名狀態及年齡，未確認欄位請保留空白。</p><form id="draft-form">${fields.map(([key,label])=>`<p><label>${label}<br><input style="width:100%;box-sizing:border-box;padding:9px" name="${key}" value="${esc(draft[key]??"")}"></label></p>`).join("")}<button type="submit">儲存到雲端</button><button type="button" id="draft-to-review">帶入人工審核預覽</button></form>`;
+ $("draft-editor").innerHTML=`<h3>線上編輯活動草稿</h3><p class="bad">請確認場次、費用、報名狀態及年齡，未確認欄位請保留空白。</p><form id="draft-form">${fields.map(([key,label])=>`<p><label>${label}<br><input style="width:100%;box-sizing:border-box;padding:9px" name="${key}" value="${esc(draft[key]??"")}"></label></p>`).join("")}<button type="submit">儲存到雲端</button><p><label><input type="checkbox" id="draft-source-verified"> 我已核對原始公告、日期、地點及報名狀態</label></p><button type="button" id="draft-to-review">確認內容並送審</button></form>`;
  const form=$("draft-form");
  const collect=()=>{const obj={...draft};for(const [key] of fields){const v=form.elements.namedItem(key).value.trim();obj[key]=["fee","age_min","age_max"].includes(key)?(v===""?undefined:Number(v)):key==="end_at"?v||undefined:v;}return obj};
  const save=async()=>{const item=collect();const {error}=await sb.from("official_event_drafts").update({title:item.title||"",payload:item,source_url:item.link||null,updated_at:new Date().toISOString()}).eq("id",record.id);if(error){$("status").textContent="儲存失敗："+error.message;return null}await loadImportDrafts();$("status").textContent="雲端草稿已儲存，可在手機或電腦登入同一管理後台編輯。";return item};
  form.onsubmit=async e=>{e.preventDefault();await save()};
- $("draft-to-review").onclick=async()=>{const item=await save();if(!item)return;$("json").value=JSON.stringify([item],null,2);$("verified").checked=false;$("json").closest("details").open=true;$("status").textContent="已帶入待審核預覽，請核對來源後再檢查。";$("preview").scrollIntoView({behavior:"smooth"})};
+ $("draft-to-review").onclick=async()=>{
+ if(!$("draft-source-verified").checked){$("status").textContent="請先核對原始公告，並勾選確認。";return}
+ const item=await save();if(!item)return;
+ $("json").value=JSON.stringify([item]);$("verified").checked=true;
+ await $("preview").onclick();
+ const selected=document.querySelector('input[data-i="0"]:not(:disabled)');
+ if(!selected){$("status").textContent="此草稿尚不能送審，請查看下方檢查結果並修改。";$("results").scrollIntoView({behavior:"smooth"});return}
+ selected.checked=true;await $("submit").onclick();
+ };
  $("draft-section").scrollIntoView({behavior:"smooth"});
 }
 async function addSelectedAsDrafts(){
@@ -107,7 +115,7 @@ $("preview").onclick=async()=>{
       if(from>10000)throw Error("活動數量超出預覽檢查上限，請分批處理");
     }
     results=previewImport(items.map(item=>({...item,source_verified:$("verified").checked})),existing);
-    $("results").innerHTML=results.map(({candidate,result},i)=>`<section class="card"><label><input type="checkbox" data-i="${i}" ${result.state==="ready"?"":"disabled"}><b>${esc(candidate.title||"未命名")}</b></label><p class="${result.state==="ready"?"good":"bad"}">${esc(result.state)}</p><small>${esc([...result.errors,...result.warnings].join("；")||"檢查通過")}</small>${result.duplicates.length?`<p>疑似重複：${esc(result.duplicates.map(x=>x.title).join("、"))}</p>`:""}</section>`).join("");
+    $("results").innerHTML=results.map(({candidate,result},i)=>`<section class="card"><label><input type="checkbox" data-i="${i}" ${result.state==="ready"?"":"disabled"}><b>${esc(candidate.title||"未命名")}</b></label><p class="${result.state==="ready"?"good":"bad"}">${esc(({ready:"可送審",duplicate:"疑似重複",invalid:"資料需要修改",review:"需要人工確認"})[result.state]||"請核對資料")}</p><small>${esc([...result.errors,...result.warnings].join("；")||"檢查通過")}</small>${result.duplicates.length?`<p>疑似重複：${esc(result.duplicates.map(x=>x.title).join("、"))}</p>`:""}</section>`).join("");
     $("status").textContent=`共 ${results.length} 筆；可建立 ${results.filter(x=>x.result.state==="ready").length} 筆。需人工確認的資料不可直接批次建立。`;
     $("submit").disabled=!results.some(x=>x.result.state==="ready");
   }catch(e){$("status").textContent="預覽失敗："+e.message}
