@@ -25,6 +25,9 @@ export function mountActivityImport(root,{sb,userId,cities,canManage,onSubmitted
   const $=selector=>root.querySelector(selector);
   const permitted=()=>root.isConnected&&canManage();
   let drafts=[], source=null, current="search", searching=false, searchError="", draftError="";
+  let existingEvents=[];
+  const submittedSources=new Set();
+  const alreadySubmitted=item=>submittedSources.has(draftKey(item))||inspectEvent(item,existingEvents).duplicates.length>0;
   const optionCities=cities.map(city=>`<option>${escape(city)}</option>`).join("");
   root.innerHTML=`<h3>搜尋或匯入活動</h3>
     <div class="r" aria-label="匯入方式">
@@ -58,7 +61,7 @@ export function mountActivityImport(root,{sb,userId,cities,canManage,onSubmitted
   function renderDrafts(){
     const list=$("#activity-drafts");
     list.innerHTML=draftError?`<p class="mu">${escape(draftError)}</p><button type="button" data-reload-drafts>重新讀取草稿</button>`:
-      drafts.map(record=>`<div class="cm"><b>${escape(record.title||"未命名活動")}</b>
+      drafts.filter(record=>!alreadySubmitted(record.payload||{})).map(record=>`<div class="cm"><b>${escape(record.title||"未命名活動")}</b>
         <div class="mu">${escape([record.payload?.city,localDateTime(record.payload?.start_at).replace("T"," ")].filter(Boolean).join(" · "))}</div>
         <div class="r"><button type="button" data-edit="${escape(record.id)}">編輯</button><button type="button" class="d" data-remove="${escape(record.id)}">刪除草稿</button></div></div>`).join("")||'<p class="mu">尚無雲端草稿。</p>';
   }
@@ -70,7 +73,8 @@ export function mountActivityImport(root,{sb,userId,cities,canManage,onSubmitted
     renderDrafts();
   }
   function renderResults(){
-    const found=prepareDiscovery(source?.rows,$("#activity-region").value,$("#activity-category").value);
+    const found=prepareDiscovery(source?.rows,$("#activity-region").value,$("#activity-category").value)
+      .filter(({candidate})=>!alreadySubmitted(candidate));
     const count=$("#activity-count");
     const live={partial:"文化部部分來源",snapshot:"文化部備份資料",unavailable:"文化部未取得"}[source?.national_source];
     count.textContent=searching?"搜尋未來三個月的活動…":searchError||`找到 ${found.length} 筆${live?" · "+live:""}`;
@@ -89,17 +93,31 @@ export function mountActivityImport(root,{sb,userId,cities,canManage,onSubmitted
       openEditor(saved?.payload||item,saved?.id);
     };
   }
+  async function loadExistingEvents(){
+    const existing=[];
+    for(let offset=0;;offset+=500){
+      const {data,error}=await sb.from("events").select("id,title,link,city,venue,shared_organizer,start_at,continuous")
+        .order("id").range(offset,offset+499);
+      if(error)throw error;
+      existing.push(...data);
+      if(data.length<500)return existing;
+    }
+  }
   async function search(){
     if(searching||!permitted())return;
     searching=true;searchError="";
     $("#activity-refresh").disabled=true;
     renderResults();
     try{
-      const {data,error}=await sb.functions.invoke("refresh-web-candidates",{body:{}});
+      const [{data,error},existing]=await Promise.all([
+        sb.functions.invoke("refresh-web-candidates",{body:{}}),loadExistingEvents()
+      ]);
       if(error||!Array.isArray(data?.rows))throw error||Error("沒有收到活動資料");
+      existingEvents=existing;
       source=data;
+      if(permitted())renderDrafts();
     }catch{
-      searchError=source?"重新搜尋失敗，仍顯示上次結果。":"搜尋失敗，請重新搜尋。";
+      searchError=source?"重新搜尋或比對已送審活動失敗，仍顯示上次結果。":"搜尋或比對已送審活動失敗，請重新搜尋。";
     }finally{
       searching=false;
       if(permitted()){
@@ -186,11 +204,17 @@ export function mountActivityImport(root,{sb,userId,cities,canManage,onSubmitted
             const {error}=await sb.from("events").insert({...payload,author_id:userId,status:"pending",ai_import_key:key});
             if(error)throw error;
           }
+          submittedSources.add(draftKey(item));
+          existingEvents.push(candidate);
+          if(permitted()){
+            renderResults();
+            renderDrafts();
+          }
           const cleanup=id?await sb.from("official_event_drafts").delete().eq("id",id):null;
           if(permitted()){
             onSubmitted();
             show(back);
-            status(cleanup?.error?"活動已送審，雲端草稿仍保留。":"活動已送審，尚未公開。");
+            status(cleanup?.error?"活動已送審並從匯入清單移除；雲端草稿清除失敗。":"活動已送審，已從匯入清單移除，尚未公開。");
           }
         }else{
           await save(candidate);
