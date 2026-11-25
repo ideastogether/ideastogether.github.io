@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="zh-Hant"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>點子共玩所 Ideas together｜交換遊戲靈感，玩出親子生活的無限可能</title>
-<meta name="description" content="找台灣親子活動、展覽、常態活動，也分享在家就能玩的親子遊戲。">
+<title>點子共玩所 Ideas together｜讓陪孩子玩這件事，變得更簡單。</title>
+<meta name="description" content="依孩子年齡、可用時間與手邊材料，找到日常親子共玩靈感與居家遊戲，也可查詢近期親子活動。">
 <link rel="canonical" href="https://ideastogether.github.io/">
 <meta property="og:title" content="點子共玩所 Ideas Together">
 <meta property="og:description" content="一起找親子活動，交換居家遊戲靈感。">
@@ -307,8 +307,9 @@ body .t.event-label,body .event-summary .t.event-label{background:var(--label-bg
 @media(min-width:761px){.resource-grid>.next-resource-card{grid-template-columns:minmax(0,1fr) auto;align-items:end;gap:20px}.next-resource-actions{justify-self:end}}
 .parenting-resources .event-official-button{min-height:44px}
 @media(max-width:760px){.parenting-resources .next-resource-actions{justify-self:stretch}.parenting-resources .event-official-button{display:flex;justify-content:center}}
+body.v-games .g.daily-game{grid-template-columns:minmax(0,1fr)}.daily-game .c{display:grid;grid-template-columns:minmax(100px,30%) minmax(0,1fr);align-items:center}.daily-game .ph{height:100%;min-height:140px}.daily-game .cb{padding:18px}.recommend-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.recommend-check{display:inline-flex;align-items:center;gap:6px;padding:6px 10px}.recommend-check input[type=checkbox]{width:auto;margin:0}.game-detail-copy{white-space:pre-wrap;overflow-wrap:anywhere}fieldset{border:1px solid var(--bd);border-radius:12px;margin:12px 0;padding:12px;min-width:0}#recommend-form button{margin-top:12px}body.v-home .home-feed .g{margin-bottom:20px}@media(max-width:760px){.recommend-grid{grid-template-columns:1fr}.intro h2{white-space:normal!important}#recommend-form .recommend-check{font-size:14px}}
 </style></head><body>
-<div class="w"><nav aria-label="主選單"><a class="brand" href="#/"><h1><svg class="brand-mark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path fill="#f8d47b" d="M8 17v-2a7 7 0 1 1 8 0v2z"/><path d="M9 20h6M10 22h4"/><path fill="#825716" stroke="none" d="M12 13s-4-2.4-4-4.5c0-2 2.7-2.8 4-.8 1.3-2 4-1.2 4 .8 0 2.1-4 4.5-4 4.5z"/></svg><span>點子共玩所<small>Ideas together</small></span></h1></a><div class="r" id="nav"></div><div class="tag">交換遊戲靈感，玩出親子生活的無限可能</div></nav>
+<div class="w"><nav aria-label="主選單"><a class="brand" href="#/"><h1><svg class="brand-mark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path fill="#f8d47b" d="M8 17v-2a7 7 0 1 1 8 0v2z"/><path d="M9 20h6M10 22h4"/><path fill="#825716" stroke="none" d="M12 13s-4-2.4-4-4.5c0-2 2.7-2.8 4-.8 1.3-2 4-1.2 4 .8 0 2.1-4 4.5-4 4.5z"/></svg><span>點子共玩所<small>Ideas together</small></span></h1></a><div class="r" id="nav"></div><div class="tag">讓陪孩子玩這件事，變得更簡單。</div></nav>
 <div id="app"></div>
 <footer class="ft"><a href="#/terms">使用條款與免責聲明</a><a href="#/privacy">隱私權政策</a><a href="#/copyright">著作權與下架申請</a><span>聯絡：ideastogether2026@gmail.com</span></footer></div>
 <dialog id="event-quick" class="event-quick" aria-labelledby="event-quick-title">
@@ -317,6 +318,7 @@ body .t.event-label,body .event-summary .t.event-label{background:var(--label-bg
 </dialog>
 <div class="m" id="md"><div class="mb" id="mb"></div></div><div id="toast" class="toast" role="status" aria-live="polite"></div>
 <script src="assets/parenting-resources.js"></script>
+<script src="assets/game-discovery.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script>
 const SB_URL="https://impuxatitpghslleasma.supabase.co",SB_KEY="sb_publishable_bufFrNEhfUMxuwNmFOosRg_rPiekiNf";
@@ -725,7 +727,7 @@ const AGES=["0 歲以上","1 歲以上","2 歲以上","3 歲以上","4 歲以上
 const gameAgeKey=age=>age===6?5:age;
 const AGE_OPTIONS=AGES.map((label,value)=>({label,value})).filter(({value})=>value!==6);
 const REASONS=["廣告或商業推廣","照片涉及隱私或著作權","連結不適當","內容不完整","不適合該年齡","重複投稿","不當內容"];
-const S={get u(){return AUTH.u},get me(){return AUTH.me},games:[],likes:[],favs:[],played:[],q:"",filterOpen:false,ages:new Set(),have:new Set(),tags:new Set(),sort:"new",fav:false};
+const S={get u(){return AUTH.u},get me(){return AUTH.me},games:[],likes:[],favs:[],played:[],q:"",filterOpen:false,ages:new Set(),have:new Set(),tags:new Set(),abilities:new Set(),sort:"new",fav:false};
 let counts;
 const cnt=(a,id)=>counts?Number(counts.get(id)?.[a===S.likes?"likes":a===S.favs?"favs":"played"]||0):"—",has=(a,id)=>S.u&&a.some(x=>x.game_id===id&&x.user_id===S.u.id);
 const nick=g=>g.profiles?.nickname||"家長";
@@ -772,7 +774,7 @@ const act={
   async delrep(el){await sb.from("reports").delete().eq("id",el.dataset.id);route()},
   chip(el){const k=el.dataset.k,v=el.dataset.v;if(k==="age"){const n=+v;n<0?S.ages.clear():(S.ages.has(n)?S.ages.delete(n):S.ages.add(n))}else if(k==="sort")S.sort=v;else if(k==="fav")S.fav=!S.fav;else{const s=S[k];s.has(v)?s.delete(v):s.add(v)}home()},
   clr(){S.have.clear();home()},
-  clearFilters(){S.q="";S.ages.clear();S.have.clear();S.tags.clear();S.fav=false;S.sort="new";home()},
+  clearFilters(){S.q="";S.ages.clear();S.have.clear();S.tags.clear();S.abilities.clear();S.fav=false;S.sort="new";home()},
   async forgot(){const em=$("#ae").value.trim();if(!em)return $("#ae2").textContent="請先在上面填入 Email。";
     const{error}=await sb.auth.resetPasswordForEmail(em,{redirectTo:location.href.split("#")[0],captchaToken:CF()});cfReset();
     $("#ae2").textContent=error?"寄送失敗："+zh(error):"如果這個 Email 已註冊，重設密碼信已寄出，請到信箱查看（也看一下垃圾信件匣）。"},
@@ -789,14 +791,14 @@ const act={
 function list(){
   const h=S.have;
   let l=S.games.filter(g=>g.status==="approved").map(g=>({g,miss:g.materials.filter(m=>!h.has(m)).length,ov:g.materials.filter(m=>h.has(m)).length}));
-  l=l.filter(({g,ov})=>(S.ages.size===0||S.ages.has(gameAgeKey(g.age)))&&(!S.fav||has(S.favs,g.id))&&[...S.tags].every(t=>g.tags.includes(t))&&matches(S.q,[g.title,g.how,...g.materials,...g.tags,nick(g),AGES[g.age]])&&(!h.size||ov>0||!g.materials.length));
+  l=l.filter(({g,ov})=>(S.ages.size===0||S.ages.has(gameAgeKey(g.age)))&&(!S.fav||has(S.favs,g.id))&&[...S.tags].every(t=>g.tags.includes(t))&&[...S.abilities].every(a=>(g.abilities||[]).includes(a))&&matches(S.q,[g.title,g.how,...g.materials,...g.tags,...(g.abilities||[]),nick(g),AGES[g.age]])&&(!h.size||ov>0||!g.materials.length));
   const k={new:g=>Date.parse(g.created_at),likes:g=>cnt(S.likes,g.id),favs:g=>cnt(S.favs,g.id)}[S.sort];
   return l.sort((a,b)=>(h.size?a.miss-b.miss:0)||k(b.g)-k(a.g));
 }
 function card({g,miss}){
   const hv=S.have.size?`<span class="t ok">${miss?"還缺 "+miss+" 樣":"材料齊全"}</span>`:"";
   const path="#/games/g/"+g.id;
-  return `<article class="c" data-go="${path}"><a class="ph game-cover-link" href="${path}" aria-label="查看 ${esc(g.title)}">${g.photos[0]?`<img class="card-thumb" loading="lazy" decoding="async" width="500" height="300" src="${esc(pub(g.photos[0]))}" alt="" onerror="this.hidden=true">`:""}</a>
+  return `<article class="c" data-go="${path}"><a class="ph game-cover-link" href="${path}" aria-label="查看 ${esc(g.title)}">${g.photos[0]?`<img class="card-thumb" loading="lazy" decoding="async" width="500" height="300" src="${esc(pub(g.photos[0]))}" alt="" onerror="this.hidden=true">`:'<span aria-hidden="true">🧩</span>'}</a>
     <div class="cb"><b><a href="${path}">${esc(g.title)}</a></b>
     <div class="game-facts"><span class="t ag">${AGES[g.age]||"未指定年齡"}</span><span class="t">${esc(g.duration_label||"時間未標示")}</span>${hv}
     ${g.materials.length?g.materials.slice(0,2).map(m=>`<span class="t">${esc(m)}</span>`).join(""):'<span class="t">免材料</span>'}${g.materials.length>2?`<span class="t">＋${g.materials.length-2}</span>`:""}</div>
@@ -812,7 +814,8 @@ function home(){
   <div class="filter-label">適合年齡</div><div class="filter-row">${B("age",-1,"不限年齡",S.ages.size===0)}${AGE_OPTIONS.map(({label,value})=>B("age",value,label,S.ages.has(value))).join("")}</div>
   <details class="browse-filters" ${S.filterOpen?"open":""}><summary>更多篩選</summary><div class="browse-content">
   <div class="filter-label">想玩哪一種？</div><div class="filter-row">${TAGS.map(t=>B("tags",t,t,S.tags.has(t))).join("")}</div>
-  ${ms.length?`<div class="filter-label">我家有這些材料</div><div class="filter-row">${ms.map(m=>B("have",m,m,S.have.has(m))).join("")}${S.have.size?'<button data-a="g.clr">清除材料</button>':""}</div>`:""}
+  ${ms.length?`<div class="filter-label">我家有這些材料（優先顯示缺料較少的遊戲）</div><div class="filter-row">${ms.map(m=>B("have",m,m,S.have.has(m))).join("")}${S.have.size?'<button data-a="g.clr">清除材料</button>':""}</div>`:""}
+  <div class="filter-label">發展能力</div><div class="filter-row">${[...new Set(S.games.filter(g=>g.status==="approved").flatMap(g=>g.abilities||[]))].sort().map(a=>B("abilities",a,a,S.abilities.has(a))).join("")||'<span class="mu">已發布遊戲尚未標示發展能力。</span>'}</div>
   <div class="filter-footer"><div class="r"><span class="mu">排序</span>${B("sort","new","最新分享",S.sort==="new")}${B("sort","likes","最多按讚",S.sort==="likes")}${B("sort","favs","最多收藏",S.sort==="favs")}${B("fav",1,"只看我的收藏",S.fav)}</div></div></div></details>
   </section><div class="discovery-results"><div class="filter-actions"><span id="result-count" class="count-line" aria-live="polite"></span><button data-a="g.clearFilters">清除所有篩選</button></div><div id="game-active-filters" class="filter-chips"></div></div>
   <div id="gl"></div>`;
@@ -822,7 +825,7 @@ function home(){
 function draw(){
   const games=list(),published=S.games.some(g=>g.status==="approved");
   $("#result-count").textContent=`找到 ${games.length} 個點子`;
-  const active=[S.q.trim(),...[...S.ages].map(age=>AGES[age]),...S.tags,...S.have,S.fav?"只看我的收藏":""].filter(Boolean);
+  const active=[S.q.trim(),...[...S.ages].map(age=>AGES[age]),...S.tags,...S.have,...S.abilities,S.fav?"只看我的收藏":""].filter(Boolean);
   $("#game-active-filters").innerHTML=active.map(label=>`<span class="t">${esc(label)}</span>`).join("");
   $("#gl").innerHTML=games.length?`<div class="g">${games.map(card).join("")}</div>`:
     `<div class="empty-state"><strong>${published?"找不到符合條件的遊戲":"還沒有公開的遊戲點子"}</strong>
@@ -843,14 +846,40 @@ async function detail(id){
   <p class="mu"><span class="t ag">${AGES[g.age]||"未指定年齡"}</span> 分享者：<a data-go="#/games/by/${g.author_id}">${esc(nick(g))}</a> · ${cnt(S.played,id)} 個家庭玩過 · 瀏覽 ${views}</p>
   <p class="mu">本站遊戲僅供交流分享，點子不一定為分享者原創，也可能整理自既有玩法或遊玩經驗。</p>
   <div>${g.tags.map(t=>`<span class="t ok">${esc(t)}</span>`).join("")}</div>
-  <p><b>大約遊玩時間</b><br>${g.duration_label?esc(g.duration_label):"尚未標示"}</p>
+  ${g.duration_label?`<p><b>大約遊玩時間</b><br>${esc(g.duration_label)}</p>`:""}
   <p><b>需要的材料</b><br>${g.materials.length?g.materials.map(m=>`<span class="t">${esc(m)}</span>`).join(""):'<span class="mu">不需要特別材料</span>'}</p>
   <section><h3>怎麼玩</h3><ol class="game-steps">${String(g.how||"").split(/\r?\n+/).map(step=>step.replace(/^\s*(?:步驟\s*)?[0-9０-９]+\s*[.．、)）:：]\s*/,"").trim()).filter(Boolean).map(step=>`<li>${esc(step)}</li>`).join("")}</ol></section>
+  ${g.abilities?.length?`<p><b>發展能力</b><br>${g.abilities.map(a=>`<span class="t ok">${esc(a)}</span>`).join("")}</p>`:""}
+  ${[["difficulty","遊戲難度"],["players","適合人數"],["simple_how","簡單版玩法"],["advanced_how","進階版玩法"],["parent_tips","家長引導技巧"],["safety_notes","安全注意事項"]].filter(([key])=>g[key]?.trim()).map(([key,label])=>`<section><h3>${label}</h3><p class="game-detail-copy">${esc(g[key])}</p></section>`).join("")}
   ${g.link?`<p><b>相關連結</b><br><a href="${esc(g.link)}" target="_blank" rel="noopener noreferrer nofollow ugc">${esc(lhost(g.link))} ↗</a> <span class="mu">（外部連結，請自行留意）</span></p>`:""}
   <div class="r">${B("likes",(has(S.likes,id)?"♥":"♡")+" 讚 "+cnt(S.likes,id))}${B("favs",(has(S.favs,id)?"★ 已收藏":"☆ 收藏")+" "+cnt(S.favs,id))}${B("played",(has(S.played,id)?"✓ 我們玩過了":"我們玩過了"))}<button data-a="g.share">分享連結</button><button data-a="g.report" data-k="game_id" data-id="${id}">檢舉</button>${mine?"":`<button data-a="g.report" data-k="target_user_id" data-id="${g.author_id}">檢舉分享者</button>`}${mine?`<button data-a="g.edit" data-id="${id}">編輯</button>`:""}${mine||S.me?.is_admin?`<button class="d" data-a="g.delgame" data-id="${id}">刪除</button>`:""}</div>
   <h3>變化玩法與留言（${cs.length}）</h3>${cs.map(c=>`<div class="cm"><b>${esc(nick(c))}</b> <span class="mu">${new Date(c.created_at).toLocaleDateString("zh-TW")}</span><br>${esc(c.body).replace(/\n/g,"<br>")}<div class="mu"><a data-a="g.report" data-k="comment_id" data-id="${c.id}">檢舉</a>${S.u&&(c.user_id===S.u.id||S.me?.is_admin)?` · <a data-a="g.delcm" data-id="${c.id}">刪除</a>`:""}</div></div>`).join("")}
   ${S.u?`<textarea id="cin" rows="3" maxlength="300" placeholder="分享你的變化玩法或心得（300 字內）"></textarea><button class="p" data-a="g.cm" data-id="${id}">送出留言</button>`:'<p class="mu">登入後即可按讚、收藏、留言。</p>'}
   ${reviewActions("g",g,REASONS)}`;
+}
+function recommendPage(mode){
+  const ms=[...new Set(S.games.filter(g=>g.status==="approved").flatMap(g=>g.materials||[]))].sort();
+  const scenes=TAGS;
+  $("#app").innerHTML=`<p><a href="#/">← 返回首頁</a></p><h2>${mode==="materials"?"家裡有什麼":"今天玩什麼"}</h2>
+  <p>依現有遊戲資料找最多三個點子。選擇材料後，只推薦材料齊全的遊戲。</p>
+  <form id="recommend-form" class="filter-panel"><div class="recommend-grid">
+  <label>孩子年齡<select name="age"><option value="">不限</option>${[0,1,2,3,4,5,6,7,8,9,10,11,12].map(n=>`<option value="${n}">${n} 歲</option>`).join("")}</select></label>
+  <label>可用時間<select name="time"><option value="">不限</option><option value="5">5 分鐘內</option><option value="15">15 分鐘內</option><option value="30">30 分鐘內</option></select></label>
+  <label>遊戲情境<select name="scene"><option value="">不限</option>${scenes.map(t=>`<option>${esc(t)}</option>`).join("")}</select></label></div>
+  <fieldset><legend>準備材料</legend><label class="recommend-check"><input type="checkbox" name="limitMaterials" ${mode==="materials"?"checked":""}> 只用家裡有的材料（未勾選材料時，只找免材料遊戲）</label>
+  <div class="filter-row">${ms.map(m=>`<label class="recommend-check"><input type="checkbox" name="material" value="${esc(m)}">${esc(m)}</label>`).join("")}</div></fieldset>
+  <button class="p" type="submit">推薦遊戲</button> <button type="button" id="recommend-reset">清除條件</button></form>
+  <p id="recommend-status" role="status"></p><div id="recommend-results"></div>`;
+  const form=$("#recommend-form");let previous=[];
+  form.onsubmit=e=>{e.preventDefault();const data=new FormData(form),selected=data.getAll("material");
+    const candidates=GameDiscovery.filter(S.games,{age:data.get("age"),time:data.get("time"),scene:data.get("scene"),materials:data.has("limitMaterials")||selected.length?selected:null});
+    const rows=GameDiscovery.pick(candidates,previous);previous=rows.map(g=>g.id);
+    $("#recommend-status").textContent=rows.length?`找到 ${candidates.length} 個符合條件的遊戲，這次推薦 ${rows.length} 個。${candidates.length<=3?"符合條件的遊戲較少，重新推薦可能相同。":""}`:"目前沒有符合所有條件的遊戲，請放寬年齡、時間、情境或材料條件。尚未標示時間的遊戲不會列入時間篩選。";
+    $("#recommend-results").innerHTML=rows.length?`<div class="g">${rows.map(g=>card({g,miss:0})).join("")}</div>`:"";
+    form.querySelector('[type="submit"]').textContent="重新推薦";
+  };
+  $("#recommend-reset").onclick=()=>{form.reset();form.elements.limitMaterials.checked=false;previous=[];$("#recommend-status").textContent="";$("#recommend-results").replaceChildren();form.querySelector('[type="submit"]').textContent="推薦遊戲"};
+  if(mode==="today"){const scene=new URLSearchParams(location.hash.split("?")[1]||"").get("scene");if(scenes.includes(scene)){form.elements.scene.value=scene;form.requestSubmit()}}
 }
 function mini(g,extra=""){return `<div class="cm"><a data-go="#/games/g/${g.id}"><b>${esc(g.title)}</b></a> <span class="mu">${AGES[g.age]||"未指定年齡"} ${extra}</span></div>`}
 function author(id){
@@ -870,6 +899,9 @@ function form(g,draft){
   <label>需要的材料（用頓號分隔，例如：紙箱、膠帶）<input id="game-fm" value="${esc(g?.materials.join("、"))}"></label>
   <div class="game-tags" role="group" aria-label="遊戲標籤">${TAGS.map(t=>`<label><input type="checkbox" name="game-tag" class="ftag" value="${t}" ${g?.tags.includes(t)?"checked":""}> ${t}</label>`).join(" ")}</div>
   <label>怎麼玩<textarea id="game-fh" rows="5" maxlength="500" placeholder="可以寫孩子怎麼玩、你怎麼引導，以及孩子的反應。">${esc(g?.how)}</textarea></label><p class="mu" style="margin:-8px 0 10px">不需要寫得像教案，照平常分享的方式描述即可。</p>
+  <details><summary>補充遊戲資訊（選填）</summary>
+  <label>發展能力（用頓號分隔）<input id="game-abilities" maxlength="200" value="${esc((g?.abilities||[]).join("、"))}"></label>
+  ${[["difficulty","遊戲難度"],["players","適合人數"],["simple_how","簡單版玩法"],["advanced_how","進階版玩法"],["parent_tips","家長引導技巧"],["safety_notes","安全注意事項"]].map(([key,label])=>`<label>${label}<textarea id="game-${key}" maxlength="1000" rows="2">${esc(g?.[key])}</textarea></label>`).join("")}</details>
   </section><section class="post-step" hidden><h4 tabindex="-1">照片與送審</h4><p class="post-preview"></p>
   <label>相關連結（選填，例如玩法來源、影片或你的分享頁；需經審核）<input id="game-fl" type="url" maxlength="200" placeholder="https://" value="${esc(g?.link)}"></label>
   <label>照片（最多 3 張${g?"；不選就保留原本的照片，選了會全部取代":""}）<input id="game-fp" type="file" accept="image/*" multiple></label>
@@ -895,6 +927,8 @@ function form(g,draft){
     async submit(ctx){
       const row={title:val("ft"),how:val("fh"),age:gameAgeKey(+val("fa")),duration_label:val("fdur")||null,
         materials:materials(),tags:[...ctx.form.querySelectorAll(".ftag:checked")].map(x=>x.value),link:val("fl")||null};
+      row.abilities=[...new Set(val("abilities").split(/[,，、]/).map(x=>x.trim()).filter(Boolean))];
+      for(const key of ["difficulty","players","simple_how","advanced_how","parent_tips","safety_notes"])row[key]=val(key)||null;
       await savePost(ctx,"games",row,photos(),g?.photos||[],photos=>({photos}));
       T=0;
     }
@@ -903,7 +937,7 @@ function form(g,draft){
 
 const reset=()=>{T=0};
 async function ensure(){if(Date.now()-T>60000)await load()}
-async function show(sub,id){const hash=location.hash;await ensure();if(hash!==location.hash)return;if(sub==="g")await detail(id);else if(sub==="by")author(id);else home()}
+async function show(sub,id){const hash=location.hash;await ensure();if(hash!==location.hash)return;if(sub==="g")await detail(id);else if(sub==="by")author(id);else if(sub==="today"||sub==="materials")recommendPage(sub);else home()}
 const SKIP=new Set(["menu","shut","auth","reg","login","signup","forgot","setpw","out","delacc","sus","unsus","delrep"]);
 Object.keys(act).forEach(k=>{if(!SKIP.has(k))ACT["g."+k]=act[k]});
 return{S,ensure,reset,show,openDraft:form,openNew:act.new,AGES,REASONS,nick,load,card};
@@ -2162,7 +2196,7 @@ ACT["activity-report"]=button=>{
   };
 };
 const DOCS={
-about:["認識點子共玩所",`<p>點子共玩所 Ideas Together 是家長找親子活動、交換居家遊戲點子的地方。</p><h3>你可以在這裡做什麼？</h3><p><a href="#/events">找近期親子活動</a>、<a href="#/resources/exhibitions">看展覽</a>、<a href="#/resources/fixed">找常態活動</a>，或到<a href="#/games">居家遊戲</a>找靈感。登入後也能收藏或投稿。</p><h3>發現活動資料有誤？</h3><p>可以在活動頁回報。出發或購票前，請以主辦方最新公告為準。</p><p>聯絡我們：${MAIL} · <a href="#/privacy">隱私權政策</a></p>`],
+about:["認識點子共玩所",`<p>點子共玩所 Ideas Together 提供日常親子共玩靈感與居家遊戲，讓陪孩子玩這件事，變得更簡單。也保留親子活動資訊。</p><h3>你可以在這裡做什麼？</h3><p><a href="#/events">找近期親子活動</a>、<a href="#/resources/exhibitions">看展覽</a>、<a href="#/resources/fixed">找常態活動</a>，或到<a href="#/games">居家遊戲</a>找靈感。登入後也能收藏或投稿。</p><h3>發現活動資料有誤？</h3><p>可以在活動頁回報。出發或購票前，請以主辦方最新公告為準。</p><p>聯絡我們：${MAIL} · <a href="#/privacy">隱私權政策</a></p>`],
 privacy:["隱私權政策",`<p>「點子共玩所 Ideas together」（以下簡稱「本站」）重視你的隱私。以下說明我們如何蒐集、處理與利用你的個人資料。聯絡信箱：${MAIL}</p>
 <h3>一、蒐集的目的</h3><p>會員管理與登入驗證、遊戲投稿與審核、留言與互動、檢舉與停權處理、網站安全與防止濫用、與你聯繫，以及網站瀏覽統計。</p>
 <h3>二、蒐集的資料類別</h3><ul><li>Email、暱稱</li><li>密碼（加密後儲存，本站看不到原始密碼）</li><li>帳號類型（個人或商家／機構）</li><li>你投稿的文字、照片與連結（含活動資訊），你的留言</li><li>按讚、收藏、「我們玩過了」與個人報名標記紀錄（報名標記僅你自己可見）</li><li>檢舉紀錄</li><li>服務供應商產生的連線紀錄（例如 IP 位址、瀏覽器與裝置資訊）</li></ul>
@@ -2322,18 +2356,22 @@ async function homePage(){
   if(location.hash!==hash)return;
   const recent=G.S.games.filter(g=>g.status==="approved").sort((a,b)=>new Date(b.created_at)-new Date(a.created_at)).slice(0,3);
   const eventList=E.S.ev.filter(e=>e.status==="approved"&&E.listingType(e)==="event"&&E.upcomingSlots(e).length).sort((a,b)=>E.nextEventDate(a)-E.nextEventDate(b)).slice(0,3);
-  const gameHtml=recent.length?`<div class="home-mini-grid">${recent.map(g=>G.card({g,miss:0})).join("")}</div>`:'<div class="home-feed-empty">目前還沒有遊戲分享，歡迎成為第一位分享者。</div>';
+  const daily=GameDiscovery.daily(G.S.games);
+  const dailyHtml=daily?`<div class="g daily-game">${G.card({g:daily,miss:0})}</div>`:'<p class="mu">目前沒有已發布的遊戲。</p>';
+  const gameHtml=recent.length?`<div class="g home-game-grid">${recent.map(g=>G.card({g,miss:0})).join("")}</div>`:'<div class="home-feed-empty">目前還沒有遊戲分享，歡迎成為第一位分享者。</div>';
   const eventHtml=eventList.length?`<div class="home-mini-grid">${eventList.map(e=>E.ecard(e,E.upcomingSlots(e),true)).join("")}</div>`:'<div class="home-feed-empty">目前沒有即將舉辦的活動。</div>';
   const notice=(()=>{try{return sessionStorage.getItem("ideas_submission_notice")}catch(e){return null}})();
   if(notice){try{sessionStorage.removeItem("ideas_submission_notice")}catch(e){}}
-  $("#app").innerHTML=`${notice?`<div class="notice-banner">✓ ${esc(notice)} 你可以在「我的投稿」查看審核狀態。</div>`:""}<div class="intro"><h2>今天想找什麼？</h2><p>找靈感、找活動，也把生活中的好點子分享出去。</p></div>
+  $("#app").innerHTML=`${notice?`<div class="notice-banner">✓ ${esc(notice)} 你可以在「我的投稿」查看審核狀態。</div>`:""}<div class="intro"><h2>今天想陪孩子玩什麼？</h2><p>讓陪孩子玩這件事，變得更簡單。</p></div>
 <div class="choose">
-<a class="pick a" href="#/events">${pickIcon("events")}<h2>找親子活動</h2><p>依地點、孩子年齡、費用與時間找近期活動。</p><span class="go">找近期活動 →</span></a>
-<a class="pick b2" href="#/games">${pickIcon("games")}<h2>找居家遊戲</h2><p>在家就能玩的親子遊戲點子，依孩子年齡和現有材料來找。</p><span class="go">找遊戲點子 →</span></a>
+<a class="pick a" href="#/games/today">${pickIcon("games")}<h2>今天玩什麼</h2><p>依孩子年齡、時間和情境，找三個共玩點子。</p><span class="go">找今天的靈感 →</span></a>
+<a class="pick b2" href="#/games/materials">${pickIcon("games")}<h2>家裡有什麼</h2><p>看看現有材料，可以玩出什麼花樣。</p><span class="go">用手邊材料玩 →</span></a>
 </div>
-<section class="home-more"><h3>更多親子資源</h3>${categoryShortcuts()}</section>
+<section class="home-feed"><div class="home-feed-head"><h3>今天想怎麼玩？</h3><a href="#/games">全部居家遊戲 →</a></div><div class="filter-row">${["5 分鐘內","安靜玩","室內","小空間","戶外","免準備"].map(t=>`<a class="b" href="#/games/today?scene=${encodeURIComponent(t)}">${esc(t)}</a>`).join("")}</div></section>
+<section class="home-feed"><div class="home-feed-head"><h3>每日遊戲推薦</h3><span class="mu">每天一個共玩靈感</span></div>${dailyHtml}</section>
+<section class="home-feed"><div class="home-feed-head"><h3>最新居家遊戲</h3><a href="#/games">瀏覽全部遊戲 →</a></div>${gameHtml}</section>
 <section class="home-feed"><div class="home-feed-head"><h3>近期親子活動</h3><a href="#/events">查看全部活動 →</a></div>${eventHtml}</section>
-<section class="home-feed"><div class="home-feed-head"><h3>最新遊戲分享</h3><a href="#/games">瀏覽全部遊戲 →</a></div>${gameHtml}</section>
+<section class="home-more"><h3>更多親子資源</h3>${categoryShortcuts()}</section>
 <div class="share"><h3>一起分享，讓更多家庭找到好點子</h3><p>你可以刊登自己主辦的活動、轉貼公開親子活動，或分享居家遊戲。本站不代收報名與費用。</p><div class="share-actions"><a class="primary" href="#/share-event">分享活動</a><a href="#/share-game">分享遊戲</a></div></div>`;
 }
 const ACC={tab:"posts",open:{}},ADM={open:{published:false,archive:false,members:false,ab:false,as:false,reportHistory:false},importPeriod:"all"};
